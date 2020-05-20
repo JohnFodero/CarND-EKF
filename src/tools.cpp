@@ -45,7 +45,7 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   float vy = x_state(3);
 
   if ((px == 0) && (py == 0)) {
-      cout << "Error - divide by zero!" << endl;
+      std::cout << "Error - divide by zero!" << std::endl;
       return Hj;
   }
   float denom = (px*px) + (py*py);
