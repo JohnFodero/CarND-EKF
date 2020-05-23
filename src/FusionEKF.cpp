@@ -46,9 +46,6 @@ FusionEKF::FusionEKF() {
               0, 0, 1000, 0,
               0, 0, 0, 1000;
 
-   ekf_.R_ << 0.0225, 0,
-              0, 0.0225;
-
    ekf_.F_ = MatrixXd(4, 4);
    ekf_.F_ << 1, 0, 1, 0,
               0, 1, 0, 1,
@@ -77,12 +74,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 1, 1, 1, 1;
-    
+
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // TODO: Convert radar from polar to cartesian coordinates
       //         and initialize state.
-      std::cout << "RADAR" << std::endl;
-      return;
+      float x = measurement_pack.raw_measurements_[0] * std::cos(measurement_pack.raw_measurements_[1]);
+      float y = measurement_pack.raw_measurements_[0] * std::sin(measurement_pack.raw_measurements_[1]);
+      float vx = measurement_pack.raw_measurements_[2] * std::cos(measurement_pack.raw_measurements_[1]);
+      float vy = measurement_pack.raw_measurements_[2] * std::sin(measurement_pack.raw_measurements_[1]);
+      ekf_.x_ << x, y, vx, vy;
 
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
@@ -137,7 +137,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * - Use the sensor type to perform the update step.
    * - Update the state and covariance matrices.
    */
-
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // TODO: Radar updates
     ekf_.R_ = R_radar_;
@@ -154,4 +153,11 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   // print the output
   cout << "x_ = " << ekf_.x_ << endl;
   cout << "P_ = " << ekf_.P_ << endl;
+  if(std::isnan(ekf_.x_[0])) {
+    cout << "NAN!" << endl;
+    cout << "R " << ekf_.R_ << endl << endl;
+    cout << "H " << ekf_.H_ << endl << endl;
+    cout << "Q " << ekf_.Q_ << endl << endl;
+
+  }
 }

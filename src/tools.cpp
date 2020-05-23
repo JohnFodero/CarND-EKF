@@ -19,6 +19,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   rmse << 0,0,0,0;
 
   if((estimations.size() == 0) || (estimations.size() != ground_truth.size())) {
+      std::cout << "RMSE failed!" << std::endl;
       return rmse;
   }
   for (int i=0; i < estimations.size(); ++i) {
@@ -37,22 +38,26 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
    * TODO:
    * Calculate a Jacobian here.
    */
-   MatrixXd Hj(3,4);
+  MatrixXd Hj(3,4);
 
   float px = x_state(0);
   float py = x_state(1);
   float vx = x_state(2);
   float vy = x_state(3);
 
-  if ((px == 0) && (py == 0)) {
+  float denom = (px*px) + (py*py);
+  if (fabs(denom) < 0.0001) {
       std::cout << "Error - divide by zero!" << std::endl;
       return Hj;
   }
-  float denom = (px*px) + (py*py);
   Hj(0, 0) = px/pow(denom, 0.5);
   Hj(0, 1) = py/pow(denom, 0.5);
+  Hj(0, 2) = 0;
+  Hj(0, 3) = 0;
   Hj(1, 0) = (-1*py)/denom;
   Hj(1, 1) = px/denom;
+  Hj(1, 2) = 0;
+  Hj(1, 3) = 0;
   Hj(2, 0) = py*(vx*py-vy*px)/pow(denom, 1.5);
   Hj(2, 1) = px*(vy*px-vx*py)/pow(denom, 1.5);
   Hj(2, 2) = px/pow(denom, 0.5);

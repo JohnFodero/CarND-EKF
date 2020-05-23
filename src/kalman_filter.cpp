@@ -1,8 +1,9 @@
 #include "kalman_filter.h"
-
+#include <iostream>
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+constexpr double PI = 3.14159265358979323846;
 /*
  * Please note that the Eigen library does not initialize
  *   VectorXd or MatrixXd objects with zeros upon creation.
@@ -55,8 +56,26 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /**
    * TODO: update the state by using Extended Kalman Filter equations
    */
-   VectorXd z_pred = H_*x_;
+   VectorXd z_pred = VectorXd(3);
+   float px = x_[0];
+   float py = x_[1];
+   float vx = x_[2];
+   float vy = x_[3];
+   float combined = pow(pow(px, 2) + pow(py, 2), 0.5);
+   if (combined < 0.00001) {
+     std::cout << "DIV BY 0" << std::endl;
+   }
+   z_pred << combined, std::atan2(py,px), (px*vx + py*vy)/combined;
    VectorXd y = z - z_pred;
+
+   // normalize angle
+   while (y(1) < -PI) {
+     y(1) += PI;
+   }
+   while (y(1) > PI) {
+     y(1) -= PI;
+   }
+
    MatrixXd Ht = H_.transpose();
    MatrixXd S = H_*P_*Ht + R_;
    MatrixXd Si = S.inverse();
